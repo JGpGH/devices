@@ -8,45 +8,57 @@ class ConfigGenerator:
 
     def variableToString(self, name, type, value):
         if isinstance(value, list):
-            return f"{type} {name}[] = {{{','.join(value)}}};\n"
+            stringValue = ','.join([str(v) for v in value])
+            return f"const {type.strip('[]')} {name}[] = {{{stringValue}}};\n"
         else:
-            return f"{type} {name} = {value};\n"
+            return f"const {type} {name} = {value};\n"
 
+    def validateNonArrayType(self, variableType, variableName,  value):
+            if variableType in self.wholeNumberTypes:
+                if not isinstance(value, int):
+                    print(f"config variable {variableName} must be an integer")
+                    return False
+            elif variableType in self.decimalNumberTypes:
+                if not isinstance(value, float):
+                    print(f"config variable {variableName} must be a decimal number")
+                    return False
+            elif variableType in self.stringTypes:
+                if not isinstance(value, str):
+                    print(f"config variable {variableName} must be a string")
+                    return False
+            return True
+                
     def validateConfig(self, configVariables, configSchema):
         # check for variables that are not present in schema
         for variableName in configVariables:
             if variableName not in configSchema:
                 print(f"config variable {variableName} is not in the config schema")
                 return False
-        # check that all required variables are present
+        # check that all variables are present
         for variableName in configSchema:
-            if variableName not in configVariables and configSchema[variableName]['required']:
-                print(f"Missing required config variable {variableName}")
+            if variableName not in configVariables:
+                print(f"Missing config variable {variableName}")
                 return False
         # check that all variables are of the correct type
         for variableName in configSchema:
-            if isinstance(configSchema[variableName]['default'], list) and not isinstance(configVariables[variableName], list):
-                print(f"config variable {variableName} is not a list")
-                return False
-            variableType = configSchema[variableName]['type']
-            if variableType in self.wholeNumberTypes:
-                if not isinstance(configVariables[variableName], int):
-                    print(f"config variable {variableName} is not an integer")
+            if '[]' in configSchema[variableName]['type']:
+                if not isinstance(configVariables[variableName], list):
+                    print(f"config variable {variableName} must be an array")
                     return False
-            elif variableType in self.decimalNumberTypes:
-                if not isinstance(configVariables[variableName], float):
-                    print(f"config variable {variableName} is not a decimal number")
-                    return False
-            elif variableType in self.stringTypes:
-                if not isinstance(configVariables[variableName], str):
-                    print(f"config variable {variableName} is not a string")
+                else:
+                    variableType = configSchema[variableName]['type'].strip('[]')
+                    for value in configVariables[variableName]:
+                        if not self.validateNonArrayType(variableType, variableName, value):
+                            return False
+            else:
+                if not self.validateNonArrayType(variableType, variableName, configVariables[variableName]):
                     return False
         return True
 
     def generate(self, outputPath, schema, configVariables):
         if not self.validateConfig(configVariables, schema):
             print("config schema validation failed - aborting generation")
-            return
+            exit(1)
         with open(outputPath, 'w') as f:
             f.write("// This file is auto-generated\n")
             f.write("#ifndef CONFIG_H\n")
