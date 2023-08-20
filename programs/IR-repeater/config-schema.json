@@ -1,0 +1,7 @@
+{
+    "IR_SEND_PINS": {
+        "description": "IR pins where the signal will be broadcasted",
+        "type": "int",
+        "default": [4, 5, 6]
+    }
+}

@@ -1,6 +1,7 @@
 #include <IRremote.hpp>
 #define DECODE_ONKYO
 const uint_fast8_t IR_RECEIVE_PIN = 2;
+int[] IR_SEND_PINS = {3, 4, 5};
 
 void setup() {
     Serial.begin(9600);
@@ -8,15 +9,17 @@ void setup() {
     Serial.println("boot");
 }
 
+void retransmit(IRData::protocol p, uint32_t address, uint32_t command) {
+    switch p {
+        case NEC:
+            IrReceiver.sendNEC(address, command, 1);
+            break;
+    }
+}
+
 void loop() {
     if (IrReceiver.decode()) {
-        if(IrReceiver.decodedIRData.protocol == NEC) {
-            IrReceiver.printIRResultShort(&Serial); // Print complete received data in one line
-        }
-        if (IrReceiver.decodedIRData.address == 0x0 && IrReceiver.decodedIRData.command == 0x58) {
-            delay(1000);
-            Serial.write("secret code detected");
-        }
+        retransmit(IrReceiver.decodedIRData.protocol, IrReceiver.decodedIRData.address, IrReceiver.decodedIRData.command);
         IrReceiver.resume(); // Enable receiving of the next value
     }
 }
