@@ -1,0 +1,8 @@
+[
+    {
+        "id": "1",
+        "name": "test-nano",
+        "fbqn": "atmel-avr-xminis:avr:atmega328p_xplained_mini",
+        "program": "blinky"
+    }
+]

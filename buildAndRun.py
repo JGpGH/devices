@@ -1,15 +1,15 @@
 import os
 import sys
 
-def buildAndRun(device, fbqn, port):
-    os.system(f"arduino-cli compile --fqbn {fbqn} {device}")
-    os.system(f"arduino-cli upload -p {port} --fqbn {fbqn} {device}")
+def buildAndRun(program, fbqn, port):
+    os.system(f"arduino-cli compile --fqbn {fbqn} {program}")
+    os.system(f"arduino-cli upload -p {port} --fqbn {fbqn} {program}")
 
 def main():
-    device = sys.argv[1]
+    program = sys.argv[1]
     fbqn = sys.argv[2]
     port = sys.argv[3]
-    buildAndRun(device, fbqn, port)
+    buildAndRun(program, fbqn, port)
 
 if __name__ == "__main__":
     main()
