@@ -1,1 +1,0 @@
-arduino-cli compile --fqbn atmel-avr-xminis:avr:atmega328p_xplained_mini

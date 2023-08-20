@@ -3,8 +3,9 @@ import sys
 import json
 
 def buildAndRun(program, fbqn, port):
-    os.system(f"arduino-cli compile --fqbn {fbqn} {program}")
-    os.system(f"arduino-cli upload -p {port} --fqbn {fbqn} {program}")
+    programPath = os.path.join(os.getcwd(), 'programs', program)
+    os.system(f"arduino-cli compile --fqbn {fbqn} {programPath}")
+    os.system(f"arduino-cli upload -p {port} --fqbn {fbqn} {programPath}")
 
 def loadConfigurations():
     with open('configs.json') as json_file:
