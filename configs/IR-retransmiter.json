@@ -2,6 +2,7 @@
     "fbqn": "atmel-avr-xminis:avr:atmega328p_xplained_mini",
     "program": "IR-repeater",
     "vars": {
-        "IR_SEND_PINS": [4, 5, 6]
+        "IR_SEND_PIN": 4,
+        "IR_RECEIVE_PIN": 2
     }
 }

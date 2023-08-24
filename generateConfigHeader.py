@@ -51,6 +51,7 @@ class ConfigGenerator:
                         if not self.validateNonArrayType(variableType, variableName, value):
                             return False
             else:
+                variableType = configSchema[variableName]['type']
                 if not self.validateNonArrayType(variableType, variableName, configVariables[variableName]):
                     return False
         return True

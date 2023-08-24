@@ -1,6 +1,10 @@
 {
-    "IR_SEND_PINS": {
+    "IR_SEND_PIN": {
         "description": "IR pins where the signal will be broadcasted",
-        "type": "int[]"
+        "type": "int"
+    },
+    "IR_RECEIVE_PIN": {
+        "description": "IR pin where the signal will be received",
+        "type": "int"
     }
 }
