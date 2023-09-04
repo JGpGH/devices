@@ -1,12 +1,23 @@
 import os
 import sys
 import json
+import getopt
 from generateConfigHeader import ConfigGenerator
 
-def buildAndRun(program, fbqn, port):
+def verboseCommand(command):
+    print(command)
+    os.system(command)
+
+def build(program, fbqn):
     programPath = os.path.join(os.getcwd(), 'programs', program)
-    os.system(f"arduino-cli compile --fqbn {fbqn} {programPath}")
-    os.system(f"arduino-cli upload -p {port} --fqbn {fbqn} {programPath}")
+    libPath = os.path.join(os.getcwd(), 'libs')
+    command = f"arduino-cli compile --fqbn {fbqn} --libraries {libPath} {programPath}"
+    verboseCommand(command)
+
+def run(program, fbqn, port):
+    programPath = os.path.join(os.getcwd(), 'programs', program)
+    command = f"arduino-cli upload --fqbn {fbqn} -p {port} {programPath}"
+    verboseCommand(command)
 
 def loadConfiguration(configId):
     with open(os.path.join(os.getcwd(), 'configs', f'{configId}.json')) as json_file:
@@ -37,11 +48,26 @@ def configExists(configId):
     return os.path.exists(os.path.join(os.getcwd(), 'configs', f'{configId}.json'))
 
 def main():
-    if len(sys.argv) < 3:
-        print("Please provide a config id and a port")
-        return
-    configId = sys.argv[1]
-    port = sys.argv[2]
+    configId = None
+    port = None
+    buildOnly = False
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "c:p:b", ["config=", "port=", "build"])
+        for opt, arg in opts:
+            if opt in ("-c", "--config"):
+                configId = arg
+            elif opt in ("-p", "--port"):
+                port = arg
+            elif opt in ("-b", "--build"):
+                buildOnly = True
+        for arg in args:
+            if configId is None:
+                configId = arg
+            elif port is None:
+                port = arg
+    except getopt.GetoptError:
+        print('buildAndRun.py -c <configId> -p <port>')
+        sys.exit(2)
 
     if not configExists(configId):
         print("Invalid config id")
@@ -49,8 +75,11 @@ def main():
     config = loadConfiguration(configId)
     print(f'generating config variables header for {config["program"]}')
     generateConfigHeader(config['vars'], config['program'])
-    print(f"Building and running {configId} on {port}")
-    buildAndRun(config['program'], config['fbqn'], port)
+    print(f"Building {configId}")
+    build(config['program'], config['fbqn'])
+    if not buildOnly:
+        print(f"running {configId} on {port}")
+        run(config['program'], config['fbqn'], port)
 
 if __name__ == "__main__":
     main()
