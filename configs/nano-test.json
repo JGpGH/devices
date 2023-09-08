@@ -1,7 +1,5 @@
 {
     "fbqn": "atmel-avr-xminis:avr:atmega328p_xplained_mini",
-    "program": "blinky",
-    "vars": {
-        "BLINK_SPEED": 300
-    }
+    "program": "tests",
+    "vars": {}
 }

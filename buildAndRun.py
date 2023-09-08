@@ -6,18 +6,18 @@ from generateConfigHeader import ConfigGenerator
 
 def verboseCommand(command):
     print(command)
-    os.system(command)
+    return os.system(command)
 
 def build(program, fbqn):
     programPath = os.path.join(os.getcwd(), 'programs', program)
     libPath = os.path.join(os.getcwd(), 'libs')
     command = f"arduino-cli compile --fqbn {fbqn} --libraries {libPath} {programPath}"
-    verboseCommand(command)
+    return verboseCommand(command)
 
 def run(program, fbqn, port):
     programPath = os.path.join(os.getcwd(), 'programs', program)
     command = f"arduino-cli upload --fqbn {fbqn} -p {port} {programPath}"
-    verboseCommand(command)
+    return verboseCommand(command)
 
 def loadConfiguration(configId):
     with open(os.path.join(os.getcwd(), 'configs', f'{configId}.json')) as json_file:
@@ -76,7 +76,9 @@ def main():
     print(f'generating config variables header for {config["program"]}')
     generateConfigHeader(config['vars'], config['program'])
     print(f"Building {configId}")
-    build(config['program'], config['fbqn'])
+    if build(config['program'], config['fbqn']) != 0:
+        print(f"Build failed for {configId}")
+        return
     if not buildOnly:
         print(f"running {configId} on {port}")
         run(config['program'], config['fbqn'], port)

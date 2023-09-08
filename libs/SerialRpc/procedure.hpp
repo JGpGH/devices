@@ -1,9 +1,7 @@
-struct Buffer {
-    byte* data;
-    unsigned long len;
-    unsigned int readIndex;
-    unsigned int writeIndex;
-};
+#ifndef SERIALRPC_PROCEDURE_HPP
+#define SERIALRPC_PROCEDURE_HPP
+
+#include "codec.hpp"
 
 //A procedure is a function that takes a buffer of bytes and returns a buffer of bytes
 typedef Buffer (*Procedure)(Buffer);
@@ -27,4 +25,4 @@ ProcedureSet procedureSetFromArray(Procedure* procedures, unsigned int len) {
     return set;
 }
 
-
+#endif

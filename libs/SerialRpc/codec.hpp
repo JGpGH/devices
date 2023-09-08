@@ -1,12 +1,18 @@
-#include "procedure.h"
+#ifndef _SERIAL_RPC_CODEC_HPP_
+#define _SERIAL_RPC_CODEC_HPP_
 
 class Buffer {
-    byte* data;
+    unsigned char* data;
     unsigned int len;
     unsigned int readIndex; // new member variable to keep track of read index
     unsigned int writeIndex; // new member variable to keep track of write index
     public:
-        Buffer(byte* data, unsigned int len) : data(data), len(len), readIndex(0), writeIndex(0) {}
+        Buffer(unsigned char* data, unsigned int len) : data(data), len(len), readIndex(0), writeIndex(0) {}
+        Buffer(unsigned int len) : data(new unsigned char[len]), len(len), readIndex(0), writeIndex(0) {}
+
+        ~Buffer() {
+            delete[] data;
+        }
 
         void reset() {
             readIndex = 0;
@@ -21,16 +27,16 @@ class Buffer {
             readIndex += len;
         }
 
-        void append(byte* data, unsigned int len) {
+        void append(unsigned char* data, unsigned int len) {
             memcpy(this->data + writeIndex, data, len);
             writeIndex += len;
         }
 
-        byte decode_u8() {
+        unsigned char decode_u8() {
             if (available() < 1) {
                 return 0;
             }
-            byte value = data[readIndex];
+            unsigned char value = data[readIndex];
             readIndex += 1;
             return value;
         }
@@ -44,24 +50,24 @@ class Buffer {
             return value;
         }
 
-        unsigned int decode_u32() {
+        unsigned long decode_u32() {
             if (available() < 4) {
                 return 0;
             }
-            unsigned int value = data[readIndex] | (data[readIndex + 1] << 8) |
+            unsigned long value = data[readIndex] | (data[readIndex + 1] << 8) |
                               (data[readIndex + 2] << 16) | (data[readIndex + 3] << 24);
             readIndex += 4;
             return value;
         }
 
-        unsigned long decode_u64() {
+        unsigned long long decode_u64() {
             if (available() < 8) {
                 return 0;
             }
-            unsigned long value = data[readIndex] | (data[readIndex + 1] << 8) |
-                               (data[readIndex + 2] << 16) | (data[readIndex + 3] << 24) |
-                               (data[readIndex + 4] << 32) | (data[readIndex + 5] << 40) |
-                               (data[readIndex + 6] << 48) | (data[readIndex + 7] << 56);
+            unsigned long long value = (unsigned long long)data[readIndex] | ((unsigned long long)data[readIndex + 1] << 8) |
+                               ((unsigned long long)data[readIndex + 2] << 16) | ((unsigned long long)data[readIndex + 3] << 24) |
+                               ((unsigned long long)data[readIndex + 4] << 32) | ((unsigned long long)data[readIndex + 5] << 40) |
+                               ((unsigned long long)data[readIndex + 6] << 48) | ((unsigned long long)data[readIndex + 7] << 56);
             readIndex += 8;
             return value;
         }
@@ -95,16 +101,6 @@ class Buffer {
             return value;
         }
 
-        String decode_string() {
-            unsigned int strLen = decode_u16();
-            if (available() < strLen) {
-                return "";
-            }
-            String value((char*)(data + readIndex), strLen);
-            readIndex += strLen;
-            return value;
-        }
-
         char decode_i8 () {
             return (char)decode_u8();
         }
@@ -121,7 +117,7 @@ class Buffer {
             return (long long)decode_u64();
         }
 
-        void encode_u8(byte value) {
+        void encode_u8(unsigned char value) {
             data[writeIndex] = value;
             writeIndex += 1;
         }
@@ -132,7 +128,7 @@ class Buffer {
             writeIndex += 2;
         }
 
-        void encode_u32(unsigned int value) {
+        void encode_u32(unsigned long value) {
             data[writeIndex] = value & 0xFF;
             data[writeIndex + 1] = (value >> 8) & 0xFF;
             data[writeIndex + 2] = (value >> 16) & 0xFF;
@@ -140,7 +136,7 @@ class Buffer {
             writeIndex += 4;
         }
 
-        void encode_u64(unsigned long value) {
+        void encode_u64(unsigned long long value) {
             data[writeIndex] = value & 0xFF;
             data[writeIndex + 1] = (value >> 8) & 0xFF;
             data[writeIndex + 2] = (value >> 16) & 0xFF;
@@ -167,15 +163,8 @@ class Buffer {
             writeIndex += 8;
         }
 
-        void encode_string(String value) {
-            unsigned int strLen = value.length();
-            encode_u16(strLen);
-            memcpy(data + writeIndex, value.c_str(), strLen);
-            writeIndex += strLen;
-        }
-
         void encode_i8(char value) {
-            encode_u8((byte)value);
+            encode_u8((unsigned char)value);
         }
 
         void encode_i16(int value) {
@@ -187,8 +176,8 @@ class Buffer {
         }
 
         void encode_i64(long long value) {
-            encode_u64((unsigned long)value);
+            encode_u64((unsigned long long)value);
         }
-
-        //TODO: add array codec functions
 };
+
+#endif
