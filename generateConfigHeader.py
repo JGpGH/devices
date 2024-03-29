@@ -35,10 +35,12 @@ class ConfigGenerator:
                 print(f"config variable {variableName} is not in the config schema")
                 return False
         # check that all variables are present
-        for variableName in configSchema:
-            if variableName not in configVariables:
-                print(f"Missing config variable {variableName}")
-                return False
+        for configName in configSchema:
+            if configName not in configVariables:
+                if configSchema[configName]['required']:
+                    print(f"Missing config variable {variableName}")
+                    return False
+                configVariables[configName] = configSchema[configName]['default']
         # check that all variables are of the correct type
         for variableName in configSchema:
             if '[]' in configSchema[variableName]['type']:

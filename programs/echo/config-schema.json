@@ -1,0 +1,8 @@
+{    
+    "BAUDRATE": {
+        "description": "speed of the serial port",
+        "type": "int",
+        "default": 115200,
+        "required": true
+    }
+}

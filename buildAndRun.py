@@ -3,6 +3,7 @@ import sys
 import json
 import getopt
 from generateConfigHeader import ConfigGenerator
+from install import clipath
 
 def verboseCommand(command):
     print(command)
@@ -11,12 +12,12 @@ def verboseCommand(command):
 def build(program, fbqn):
     programPath = os.path.join(os.getcwd(), 'programs', program)
     libPath = os.path.join(os.getcwd(), 'libs')
-    command = f"arduino-cli compile --fqbn {fbqn} --libraries {libPath} {programPath}"
+    command = f"{clipath} compile --fqbn {fbqn} --libraries {libPath} {programPath}"
     return verboseCommand(command)
 
 def run(program, fbqn, port):
     programPath = os.path.join(os.getcwd(), 'programs', program)
-    command = f"arduino-cli upload --fqbn {fbqn} -p {port} {programPath}"
+    command = f"{clipath} upload --fqbn {fbqn} -p {port} {programPath}"
     return verboseCommand(command)
 
 def loadConfiguration(configId):

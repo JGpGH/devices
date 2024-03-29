@@ -3,6 +3,6 @@
         "description": "speed of the blink",
         "type": "int",
         "default": 1000,
-        "required": true
+        "required": false
     }
 }
