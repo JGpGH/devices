@@ -1,4 +1,18 @@
 import struct
+from enum import Enum
+
+class Type(Enum):
+    U8 = 0
+    U16 = 1
+    U32 = 2
+    U64 = 3
+    I8 = 4
+    I16 = 5
+    I32 = 6
+    I64 = 7
+    F32 = 8
+    F64 = 9
+    BOOL = 10
 
 class Buffer:
     def __init__(self, data, len):
@@ -115,6 +129,54 @@ class Buffer:
         self.data[self.writeIndex] = 1 if value else 0
         self.writeIndex += 1
 
+    def encode(self, value, type):
+        if type == Type.U8:
+            self.encode_u8(value)
+        elif type == Type.U16:
+            self.encode_u16(value)
+        elif type == Type.U32:
+            self.encode_u32(value)
+        elif type == Type.U64:
+            self.encode_u64(value)
+        elif type == Type.BOOL:
+            self.encode_bool(value)
+        elif type == Type.F32:
+            self.encode_f32(value)
+        elif type == Type.F64:
+            self.encode_f64(value)
+        elif type == Type.I8:
+            self.encode_i8(value)
+        elif type == Type.I16:
+            self.encode_i16(value)
+        elif type == Type.I32:
+            self.encode_i32(value)
+        elif type == Type.I64:
+            self.encode_i64(value)
+
+    def decode(self, type):
+        if type == Type.U8:
+            return self.decode_u8()
+        elif type == Type.U16:
+            return self.decode_u16()
+        elif type == Type.U32:
+            return self.decode_u32()
+        elif type == Type.U64:
+            return self.decode_u64()
+        elif type == Type.BOOL:
+            return self.decode_bool()
+        elif type == Type.F32:
+            return self.decode_f32()
+        elif type == Type.F64:
+            return self.decode_f64()
+        elif type == Type.I8:
+            return self.decode_i8()
+        elif type == Type.I16:
+            return self.decode_i16()
+        elif type == Type.I32:
+            return self.decode_i32()
+        elif type == Type.I64:
+            return self.decode_i64()
+
     def encode_f32(self, value):
         self.data[self.writeIndex:self.writeIndex + 4] = struct.pack('<f', value)
         self.writeIndex += 4
@@ -201,3 +263,10 @@ class Buffer:
 
     def get_len(self):
         return self.writeIndex
+
+class Variable:
+    def __init__(self, name, type: Type, value):
+        self.name = name
+        self.type = type
+        self.value = value
+
