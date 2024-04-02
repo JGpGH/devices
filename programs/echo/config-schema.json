@@ -1,8 +1,10 @@
 {    
-    "BAUDRATE": {
-        "description": "speed of the serial port",
-        "type": "int",
-        "default": 115200,
-        "required": true
+    "config": {
+        "BAUDRATE": {
+            "description": "speed of the serial port",
+            "type": "i32",
+            "default": 115200,
+            "required": true
+        }
     }
 }

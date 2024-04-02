@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 import serial
 import time
 import sys
 import getopt
+import threading
 
 #defines dataclass for serial connection options
 class SerialOptions:
@@ -34,20 +36,34 @@ def load_serial_options():
 def openFromOptions(options):
     return serial.Serial(options.port, options.baudrate, timeout=options.timeout)
 
-def loopInOut():
+def printOutput(ser: serial.Serial):
     # Read serial port
     while True:
         try:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').rstrip()
                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                print(f'{timestamp}->{line}')
+                print(f'{timestamp}: {line}')
         except KeyboardInterrupt:
             print('Exiting...')
             sys.exit()
+
+def sendInput(ser: serial.Serial):
+    while True:
+        try:
+            message = input('->')
+            ser.write(message.encode())
+            ser.flush()
+        except KeyboardInterrupt:
+            print('Exiting...')
+            sys.exit()
+    
 
 if __name__ == '__main__':
     # Open serial port
     ser = openFromOptions(load_serial_options())
     ser.flush()
-    loopInOut()
+    poT = threading.Thread(target=printOutput, args=(ser,))
+    poT.daemon = True  # This ensures the thread will exit when the main program exits
+    poT.start()
+    sendInput(ser)

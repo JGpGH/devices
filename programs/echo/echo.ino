@@ -2,12 +2,12 @@
 
 void setup() {
     Serial.begin(BAUDRATE);
-    Serial.println("Echo program started");
 }
+int ledc = 0;
 
 void loop() {
     if (Serial.available()) {
         Serial.write(Serial.read());
+        digitalWrite(LED_BUILTIN, ++ledc % 2 == 0 ? HIGH : LOW);
     }
-    delay(10);
 }

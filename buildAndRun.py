@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 import sys
 import json
 import getopt
 from generateConfigHeader import ConfigGenerator
 from install import clipath
+from generateConfigHeader import Procedure
 
 def verboseCommand(command):
     print(command)
@@ -35,15 +38,23 @@ def loadConfiguration(configId):
             return
         return data
 
-def loadConfigProgramSchema(programeName):
+def loadConfigProgram(programeName):
     with open(os.path.join(os.getcwd(), 'programs', programeName, 'config-schema.json')) as json_file:
         data = json.load(json_file)
         return data
-    
+
 def generateConfigHeader(configVariables, programName):
     configHeaderPath = os.path.join(os.getcwd(), 'programs', programName, 'config.h')
-    schema = loadConfigProgramSchema(programName)
-    ConfigGenerator().generate(configHeaderPath, schema, configVariables)
+    schema = loadConfigProgram(programName)
+    if 'procedures' not in schema:
+        schema['procedures'] = []
+    if 'config' not in schema:
+        schema['config'] = {}
+
+    procedures = []
+    for procedure in schema['procedures']:
+        procedures.append(Procedure.fromstr(procedure))
+    ConfigGenerator().generate(configHeaderPath, schema['config'], configVariables, procedures)
 
 def configExists(configId):
     return os.path.exists(os.path.join(os.getcwd(), 'configs', f'{configId}.json'))
