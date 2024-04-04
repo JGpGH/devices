@@ -137,6 +137,155 @@ class Buffer {
             return (long long)decode_u64(success);
         }
 
+        bool decode_u8Arr(unsigned char* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_u8(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_i8Arr(char* result, unsigned int* result_len, unsigned int max_result) {
+            return decode_u8Arr((unsigned char*)result, result_len, max_result);
+        }
+
+        bool decode_u16Arr(unsigned int* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_u16(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_i16Arr(int* result, unsigned int* result_len, unsigned int max_result) {
+            return decode_u16Arr((unsigned int*)result, result_len, max_result);
+        }
+
+        bool decode_u32Arr(unsigned long* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_u32(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_i32Arr(long* result, unsigned int* result_len, unsigned int max_result) {
+            return decode_u32Arr((unsigned long*)result, result_len, max_result);
+        }
+
+        bool decode_u64Arr(unsigned long long* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_u64(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_i64Arr(long long* result, unsigned int* result_len, unsigned int max_result) {
+            return decode_u64Arr((unsigned long long*)result, result_len, max_result);
+        }
+
+        bool decode_boolArr(bool* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_bool(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_f32Arr(float* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_f32(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool decode_f64Arr(double* result, unsigned int* result_len, unsigned int max_result) {
+            bool success = false;
+            unsigned int arrlen = decode_u32(&success);
+            if (!success) {
+                return false;
+            }
+            result_len[0] = arrlen;
+            for(unsigned int i = 0; i < arrlen; i++) {
+                if (i >= max_result) {
+                    return false;
+                }
+                result[i] = decode_f64(&success);
+                if (!success) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         void encode_u8(unsigned char value) {
             data[writeIndex] = value;
             writeIndex += 1;
@@ -197,6 +346,70 @@ class Buffer {
 
         void encode_i64(long long value) {
             encode_u64((unsigned long long)value);
+        }
+
+        void encode_u8Arr(unsigned char* value, unsigned int len) {
+            encode_u32(len);
+            memcpy(data + writeIndex, value, len);
+            writeIndex += len;
+        }
+
+        void encode_i8Arr(char* value, unsigned int len) {
+            encode_u8Arr((unsigned char*)value, len);
+        }
+
+        void encode_u16Arr(unsigned int* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_u16(value[i]);
+            }
+        }
+
+        void encode_i16Arr(int* value, unsigned int len) {
+            encode_u16Arr((unsigned int*)value, len);
+        }
+
+        void encode_u32Arr(unsigned long* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_u32(value[i]);
+            }
+        }
+
+        void encode_i32Arr(long* value, unsigned int len) {
+            encode_u32Arr((unsigned long*)value, len);
+        }
+
+        void encode_u64Arr(unsigned long long* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_u64(value[i]);
+            }
+        }
+
+        void encode_i64Arr(long long* value, unsigned int len) {
+            encode_u64Arr((unsigned long long*)value, len);
+        }
+
+        void encode_boolArr(bool* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_bool(value[i]);
+            }
+        }
+
+        void encode_f32Arr(float* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_f32(value[i]);
+            }
+        }
+
+        void encode_f64Arr(double* value, unsigned int len) {
+            encode_u32(len);
+            for (unsigned int i = 0; i < len; i++) {
+                encode_f64(value[i]);
+            }
         }
 
         static Buffer from(unsigned char value) {
