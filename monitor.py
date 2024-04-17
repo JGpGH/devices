@@ -15,7 +15,7 @@ class SerialOptions:
 #methods to load serial options from command line arguments
 def load_serial_options():
     port = None
-    baudrate = 9600
+    baudrate = 115200
     timeout = 2000
 
     try:
@@ -30,40 +30,54 @@ def load_serial_options():
             baudrate = arg
         elif opt in ('-t', '--timeout'):
             timeout = arg
-
+    print(f"Port: {port}, Baudrate: {baudrate}, Timeout: {timeout}")
     return SerialOptions(port, baudrate, timeout)
 
-def openFromOptions(options):
-    return serial.Serial(options.port, options.baudrate, timeout=options.timeout)
+def openFromOptions(options: SerialOptions):
+    return serial.Serial(port=options.port, baudrate=options.baudrate, timeout=options.timeout)
 
-def printOutput(ser: serial.Serial):
-    # Read serial port
+def read_serial(ser: serial.Serial):
     while True:
         try:
             if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8').rstrip()
-                timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                print(f'{timestamp}: {line}')
-        except KeyboardInterrupt:
-            print('Exiting...')
-            sys.exit()
+                data = ser.read_all().decode(errors='replace').strip()
+                print("->", data)
+        except serial.SerialException as e:
+            print("Serial error:", e)
+            break
 
-def sendInput(ser: serial.Serial):
+def send_input(ser):
     while True:
         try:
-            message = input('->')
-            ser.write(message.encode())
-            ser.flush()
-        except KeyboardInterrupt:
-            print('Exiting...')
-            sys.exit()
-    
+            user_input = input("")
+            if user_input.lower() == 'exit':
+                break
+            ser.write(user_input.encode())
+        except serial.SerialException as e:
+            print("Serial error:", e)
+            break
 
 if __name__ == '__main__':
     # Open serial port
     ser = openFromOptions(load_serial_options())
     ser.flush()
-    poT = threading.Thread(target=printOutput, args=(ser,))
-    poT.daemon = True  # This ensures the thread will exit when the main program exits
-    poT.start()
-    sendInput(ser)
+    try:
+        print("Serial port opened successfully.")
+        
+        # Creating threads for reading serial data and sending input
+        read_thread = threading.Thread(target=read_serial, args=(ser,), daemon=True)
+        send_thread = threading.Thread(target=send_input, args=(ser,), daemon=True)
+        
+        # Starting threads
+        read_thread.start()
+        send_thread.start()
+        
+        # Joining threads to keep the main program running until threads are done
+        read_thread.join()
+        send_thread.join()
+        
+        # Closing serial port when threads are done
+        ser.close()
+        print("Serial port closed.")
+    except serial.SerialException as e:
+        print("Error opening serial port:", e)
