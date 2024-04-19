@@ -30,6 +30,10 @@ if not coreInstalled("atmel-avr-xminis:avr"):
 else:
     print(Success("atmel-avr-xminis:avr is already installed"))
 
+if not libraryExists("Vector-1.2.2"):
+    print(Warning("Installing Vector-1.2.2"))
+    os.system("wget -qO ~/devices/libs/Vector-1.2.2.zip https://downloads.arduino.cc/libraries/github.com/janelia-arduino/Vector-1.2.2.zip && unzip -d ~/devices/libs ~/devices/libs/Vector-1.2.2.zip && rm ~/devices/libs/Vector-1.2.2.zip")
+
 if not libraryExists("IRemote"):
     os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
 else:

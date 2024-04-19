@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import serial
-import time
 import sys
 import getopt
 import threading
 
 #defines dataclass for serial connection options
 class SerialOptions:
-    def __init__(self, port, baudrate, timeout):
+    def __init__(self, port: str, baudrate: int, timeout: int):
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
@@ -41,7 +40,7 @@ def read_serial(ser: serial.Serial):
         try:
             if ser.in_waiting > 0:
                 data = ser.read_all().decode(errors='replace').strip()
-                print("->", data)
+                print(data, end='')
         except serial.SerialException as e:
             print("Serial error:", e)
             break
