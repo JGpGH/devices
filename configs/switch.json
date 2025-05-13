@@ -3,6 +3,6 @@
     "program": "switcharray",
     "vars": {
         "BAUDRATE": 115200,
-        "SWITCH_PINS": [2]
+        "SWITCH_PINS": [2, 3, 4]
     }
 }
