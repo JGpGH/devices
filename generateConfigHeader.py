@@ -32,7 +32,7 @@ class Procedure:
         if not isTypeValid(self.returnType):
             print(Error(f"invalid return type {self.returnType}"))
             return False
-        for argType, argName in self.args:
+        for argType, _ in self.args:
             if not isTypeValid(argType):
                 print(Error(f"invalid argument type {argType}"))
                 return False
@@ -92,7 +92,7 @@ class ConfigGenerator:
         for configName in configSchema:
             if configName not in configVariables:
                 if configSchema[configName]['required']:
-                    print(Error(f"Missing config variable {variableName}"))
+                    print(Error(f"Missing config variable {configName}"))
                     return False
                 configVariables[configName] = configSchema[configName]['default']
         # check that all variables are of the correct type

@@ -1,0 +1,14 @@
+{
+    "config": {
+        "BAUDRATE": {
+            "description": "speed of the serial port",
+            "type": "i32",
+            "default": 115200
+        },
+        "SWITCH_PINS": {
+            "description": "pins to which the switches are connected",
+            "type": "u8[]",
+            "required": true
+        }
+    }
+}
