@@ -49,21 +49,21 @@ class Buffer:
         self.data[self.writeIndex] = data
         self.writeIndex += 1
 
-    def decode_u8(self):
+    def decode_u8(self) -> tuple:
         if self.available() < 1:
             return None, False
         value = self.data[self.readIndex]
         self.readIndex += 1
         return value, True
 
-    def decode_u16(self):
+    def decode_u16(self) -> tuple:
         if self.available() < 2:
             return None, False
         value = self.data[self.readIndex] | (self.data[self.readIndex + 1] << 8)
         self.readIndex += 2
         return value, True
 
-    def decode_u32(self):
+    def decode_u32(self) -> tuple:
         if self.available() < 4:
             return None, False
         value = self.data[self.readIndex] | (self.data[self.readIndex + 1] << 8) | \
@@ -71,47 +71,47 @@ class Buffer:
         self.readIndex += 4
         return value, True
 
-    def decode_u64(self):
+    def decode_u64(self) -> tuple:
         if self.available() < 8:
             return None, False
         value = int.from_bytes(self.data[self.readIndex:self.readIndex + 8], byteorder='little')
         self.readIndex += 8
         return value, True
 
-    def decode_bool(self):
+    def decode_bool(self) -> tuple:
         if self.available() < 1:
             return None, False
         value = self.data[self.readIndex] != 0
         self.readIndex += 1
         return value, True
 
-    def decode_f32(self):
+    def decode_f32(self) -> tuple:
         if self.available() < 4:
             return None, False
         value = struct.unpack('<f', self.data[self.readIndex:self.readIndex + 4])[0]
         self.readIndex += 4
         return value, True
 
-    def decode_f64(self):
+    def decode_f64(self) -> tuple:
         if self.available() < 8:
             return None, False
         value = struct.unpack('<d', self.data[self.readIndex:self.readIndex + 8])[0]
         self.readIndex += 8
         return value, True
 
-    def decode_i8(self):
+    def decode_i8(self) -> tuple:
         value, success = self.decode_u8()
         return value if success else None, success
 
-    def decode_i16(self):
+    def decode_i16(self) -> tuple:
         value, success = self.decode_u16()
         return value if success else None, success
 
-    def decode_i32(self):
+    def decode_i32(self) -> tuple:
         value, success = self.decode_u32()
         return value if success else None, success
 
-    def decode_i64(self):
+    def decode_i64(self) -> tuple:
         value, success = self.decode_u64()
         return value if success else None, success
 
@@ -139,6 +139,26 @@ class Buffer:
         self.data[self.writeIndex] = 1 if value else 0
         self.writeIndex += 1
 
+    def encode_arr(self, arr, elem_type):
+        self.encode_u32(len(arr))
+        for v in arr:
+            self.encode(v, elem_type)
+
+    def decode_arr(self, elem_type) -> tuple:
+        length, ok = self.decode_u32()
+        if not ok or length is None:
+            return None, False
+        arr = []
+        for _ in range(length):
+            result = self.decode(elem_type)
+            if not isinstance(result, tuple) or len(result) != 2:
+                return None, False
+            v, ok = result
+            if not ok:
+                return None, False
+            arr.append(v)
+        return arr, True
+
     def encode(self, value, type):
         if type == Type.U8:
             self.encode_u8(value)
@@ -162,6 +182,28 @@ class Buffer:
             self.encode_i32(value)
         elif type == Type.I64:
             self.encode_i64(value)
+        elif type == Type.U8ARR:
+            self.encode_arr(value, Type.U8)
+        elif type == Type.U16ARR:
+            self.encode_arr(value, Type.U16)
+        elif type == Type.U32ARR:
+            self.encode_arr(value, Type.U32)
+        elif type == Type.U64ARR:
+            self.encode_arr(value, Type.U64)
+        elif type == Type.I8ARR:
+            self.encode_arr(value, Type.I8)
+        elif type == Type.I16ARR:
+            self.encode_arr(value, Type.I16)
+        elif type == Type.I32ARR:
+            self.encode_arr(value, Type.I32)
+        elif type == Type.I64ARR:
+            self.encode_arr(value, Type.I64)
+        elif type == Type.F32ARR:
+            self.encode_arr(value, Type.F32)
+        elif type == Type.F64ARR:
+            self.encode_arr(value, Type.F64)
+        else:
+            raise ValueError(f"Unsupported type: {type}")
 
     def decode(self, type):
         if type == Type.U8:
@@ -186,6 +228,28 @@ class Buffer:
             return self.decode_i32()
         elif type == Type.I64:
             return self.decode_i64()
+        elif type == Type.U8ARR:
+            return self.decode_arr(Type.U8)
+        elif type == Type.U16ARR:
+            return self.decode_arr(Type.U16)
+        elif type == Type.U32ARR:
+            return self.decode_arr(Type.U32)
+        elif type == Type.U64ARR:
+            return self.decode_arr(Type.U64)
+        elif type == Type.I8ARR:
+            return self.decode_arr(Type.I8)
+        elif type == Type.I16ARR:
+            return self.decode_arr(Type.I16)
+        elif type == Type.I32ARR:
+            return self.decode_arr(Type.I32)
+        elif type == Type.I64ARR:
+            return self.decode_arr(Type.I64)
+        elif type == Type.F32ARR:
+            return self.decode_arr(Type.F32)
+        elif type == Type.F64ARR:
+            return self.decode_arr(Type.F64)
+        else:
+            return None, False
 
     def encode_f32(self, value):
         self.data[self.writeIndex:self.writeIndex + 4] = struct.pack('<f', value)
