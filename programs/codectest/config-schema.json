@@ -7,7 +7,5 @@
             "required": true
         }
     },
-    "procedures": [
-        "bool test(u8 ok)"
-    ]
+    "procedures": []
 }

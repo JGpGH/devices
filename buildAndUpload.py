@@ -5,20 +5,26 @@ import sys
 import json
 import getopt
 from generateConfigHeader import ConfigGenerator
-from install import clipath
+from ensureInstalled import clipath
 from generateConfigHeader import Procedure
 
 def verboseCommand(command):
     print(command)
     return os.system(command)
 
-def build(program, fbqn):
+def build(config):
+    program = config['program']
+    fbqn = config['fbqn']
+    print(f'generating config variables header for {config["program"]}')
+    generateConfigHeader(config['vars'], config['program'])
     programPath = os.path.join(os.getcwd(), 'programs', program)
     libPath = os.path.join(os.getcwd(), 'libs')
     command = f"{clipath} compile --fqbn {fbqn} --libraries {libPath} {programPath}"
     return verboseCommand(command)
 
-def run(program, fbqn, port):
+def upload(config, port):
+    program = config['program']
+    fbqn = config['fbqn']
     programPath = os.path.join(os.getcwd(), 'programs', program)
     command = f"{clipath} upload --fqbn {fbqn} -p {port} {programPath}"
     return verboseCommand(command)
@@ -38,14 +44,14 @@ def loadConfiguration(configId):
             return
         return data
 
-def loadConfigProgram(programeName):
+def loadConfigSchema(programeName):
     with open(os.path.join(os.getcwd(), 'programs', programeName, 'config-schema.json')) as json_file:
         data = json.load(json_file)
         return data
 
 def generateConfigHeader(configVariables, programName):
     configHeaderPath = os.path.join(os.getcwd(), 'programs', programName, 'config.h')
-    schema = loadConfigProgram(programName)
+    schema = loadConfigSchema(programName)
     if 'procedures' not in schema:
         schema['procedures'] = []
     if 'config' not in schema:
@@ -59,7 +65,7 @@ def generateConfigHeader(configVariables, programName):
 def configExists(configId):
     return os.path.exists(os.path.join(os.getcwd(), 'configs', f'{configId}.json'))
 
-def main():
+def buildAndUpload():
     configId = None
     port = None
     buildOnly = False
@@ -85,15 +91,19 @@ def main():
         print("Invalid config id")
         return
     config = loadConfiguration(configId)
-    print(f'generating config variables header for {config["program"]}')
-    generateConfigHeader(config['vars'], config['program'])
+    if config is None:
+        print("Invalid configuration")
+        return
+    if port is None:
+        print("Port is not set")
+        return
     print(f"Building {configId}")
-    if build(config['program'], config['fbqn']) != 0:
+    if build(config) != 0:
         print(f"Build failed for {configId}")
         return
     if not buildOnly:
         print(f"running {configId} on {port}")
-        run(config['program'], config['fbqn'], port)
+        upload(config, port)
 
 if __name__ == "__main__":
-    main()
+    buildAndUpload()

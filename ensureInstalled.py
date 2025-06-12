@@ -5,18 +5,21 @@ from color import Error, Warning, Info, Success
 def libraryExists(library):
     return os.path.isdir(f"libs/{library}")
 
+def has_binary(binary):
+    return os.system(f"which {binary} > /dev/null 2>&1") == 0
+
 clipath = "bin/arduino-cli"
 
 def install_required_tools():
-    if os.system("which apt") != 0:
+    if not has_binary("apt"):
         print(Error("can only run on apt based systems"))
         raise SystemExit(1)
     packages = []
-    if os.system("which unzip") != 0:
-        packages.append("unzip")
-    if os.system("which git") != 0:
+    if not has_binary("unzip"):
+        packages.append("unzip > /dev/null 2>&1")
+    if not has_binary("git"):
         packages.append("git")
-    if os.system("which curl") != 0:
+    if not has_binary("curl"):
         packages.append("curl")
     if len(packages) > 0:
         print(Info(f"Installing required packages: {', '.join(packages)}"))
@@ -41,22 +44,18 @@ def download_file(url, dest):
     except Exception as e:
         print(Error(f"Failed to download {url}: {e}"))
         return False
-
-if __name__ == "__main__":
+    
+def ensureAll():
     install_required_tools()
     arduinoCliIsInstalled()
 
     if not coreInstalled("arduino:avr"):
         print(Warning("Installing arduino:avr"))
         os.system(f"{clipath} core install arduino:avr")
-    else:
-        print(Success("arduino:avr is already installed"))
 
     if not coreInstalled("atmel-avr-xminis:avr"):
         print(Warning("Installing atmel-avr-xminis:avr"))
         os.system(f"{clipath} core install atmel-avr-xminis:avr")
-    else:
-        print(Success("atmel-avr-xminis:avr is already installed"))
 
     if not libraryExists("Vector-1.2.2"):
         print(Warning("Installing Vector-1.2.2"))
@@ -64,10 +63,10 @@ if __name__ == "__main__":
         url = "https://downloads.arduino.cc/libraries/github.com/janelia-arduino/Vector-1.2.2.zip"
         if download_file(url, zip_path):
             os.system(f"unzip -d libs {zip_path} && rm {zip_path}")
-        else:
-            print(Error("Failed to download Vector-1.2.2.zip"))
 
     if not libraryExists("IRemote"):
         os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
-    else:
-        print(Success("IRemote is already installed"))
+
+
+if __name__ == "__main__":
+    ensureAll()

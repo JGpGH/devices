@@ -1,6 +1,6 @@
 {
     "fbqn": "atmel-avr-xminis:avr:atmega328p_xplained_mini",
-    "program": "tests",
+    "program": "codectest",
     "vars": {
         "BAUDRATE": 115200
     }

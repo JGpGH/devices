@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import serial
 import sys
 import getopt
@@ -29,6 +28,9 @@ def load_serial_options():
             baudrate = arg
         elif opt in ('-t', '--timeout'):
             timeout = arg
+    if port is None:
+        print("Port not specified. Use -p <port> to specify the serial port.")
+        sys.exit(2)
     print(f"Port: {port}, Baudrate: {baudrate}, Timeout: {timeout}")
     return SerialOptions(port, baudrate, timeout)
 
@@ -40,7 +42,7 @@ def read_serial(ser: serial.Serial):
         try:
             if ser.in_waiting > 0:
                 data = ser.read_all().decode(errors='replace').strip()
-                print(data, end='')
+                print(data)
         except serial.SerialException as e:
             print("Serial error:", e)
             break
