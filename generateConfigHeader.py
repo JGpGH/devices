@@ -30,14 +30,11 @@ class Procedure:
     
     def validate(self):
         if not isTypeValid(self.returnType):
-            print(Error(f"invalid return type {self.returnType}"))
-            return False
+            raise ValueError(f"invalid return type {self.returnType}")
         for argType, _ in self.args:
             if not isTypeValid(argType):
-                print(Error(f"invalid argument type {argType}"))
-                return False
+                raise ValueError(f"invalid argument type {argType}")
         return True
-
 
 def isTypeValid(type: str):
     return type in ConfigGenerator.wholeNumberTypes
@@ -80,42 +77,36 @@ class ConfigGenerator:
                 
     def validateConfig(self, configVariables, configSchema, prodecures: list[Procedure]):
         for procedure in prodecures:
-            if not procedure.validate():
-                print(Error(f"invalid procedure {procedure}"))
-                return False
+            procedure.validate()
         # check for variables that are not present in schema
         for variableName in configVariables:
             if variableName not in configSchema:
-                print(Error(f"config variable {variableName} is not in the config schema"))
-                return False
+                raise ValueError(f"config variable {variableName} is not in the config schema")
         # check that all variables are present
         for configName in configSchema:
             if configName not in configVariables:
                 if configSchema[configName]['required']:
-                    print(Error(f"Missing config variable {configName}"))
-                    return False
+                    raise ValueError(f"Missing config variable {configName}")
                 configVariables[configName] = configSchema[configName]['default']
         # check that all variables are of the correct type
         for variableName in configSchema:
             if '[]' in configSchema[variableName]['type']:
                 if not isinstance(configVariables[variableName], list):
-                    print(Error(f"config variable {variableName} must be an array"))
-                    return False
+                    raise ValueError(f"config variable {variableName} must be an array")
                 else:
                     variableType = configSchema[variableName]['type'].strip('[]')
                     for value in configVariables[variableName]:
                         if not self.validateNonArrayType(variableType, variableName, value):
-                            return False
+                            raise ValueError(f"config variable {variableName} must be of type {variableType}")
             else:
                 variableType = configSchema[variableName]['type']
                 if not self.validateNonArrayType(variableType, variableName, configVariables[variableName]):
-                    return False
+                    raise ValueError(f"config variable {variableName} must be of type {variableType}")
         return True
 
     def generate(self, outputPath, configSchema, configVariables, procedures: list[Procedure]):
         if not self.validateConfig(configVariables, configSchema, procedures):
-            print(Error("config schema validation failed - aborting generation"))
-            exit(1)
+            raise ValueError("config schema validation failed - aborting generation")
         with open(outputPath, 'w') as f:
             f.write("// This file is auto-generated\n")
             f.write("#ifndef CONFIG_H\n")

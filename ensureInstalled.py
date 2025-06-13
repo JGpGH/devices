@@ -1,6 +1,11 @@
 import os
 import subprocess
-from color import Error, Warning, Info, Success
+from sys import platform
+from color import Error, Warning, Info
+import tempfile
+import zipfile
+import urllib.request
+
 
 def libraryExists(library):
     return os.path.isdir(f"libs/{library}")
@@ -29,22 +34,27 @@ def coreInstalled(core):
     result = subprocess.run([clipath, "core", "list"], capture_output=True, text=True)
     return core in result.stdout
 
-def arduinoCliIsInstalled():
-    if not os.path.isfile(clipath):
-        print(Warning("Installing arduino-cli"))
-        subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
-
-def download_file(url, dest):
-    """Download a file from a URL to a destination path using pure Python."""
-    import urllib.request
+def download_file(url, dest, unzip=False):
     try:
-        with urllib.request.urlopen(url) as response, open(dest, 'wb') as out_file:
-            out_file.write(response.read())
+        with urllib.request.urlopen(url) as response:
+            if unzip:
+                with tempfile.TemporaryFile() as temp, zipfile.ZipFile(temp, 'r') as zip_ref:
+                    zip_ref.extractall(dest)
+            else:
+                with open(dest, 'wb') as out_file:
+                    out_file.write(response.read())
         return True
     except Exception as e:
         print(Error(f"Failed to download {url}: {e}"))
         return False
-    
+
+def arduinoCliIsInstalled():
+    if not os.path.isfile(clipath):
+        print(Warning("Installing arduino-cli"))
+        if platform == 'win32':
+            download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", clipath, unzip=True)
+        subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
+
 def ensureAll():
     install_required_tools()
     arduinoCliIsInstalled()
@@ -61,8 +71,7 @@ def ensureAll():
         print(Warning("Installing Vector-1.2.2"))
         zip_path = "libs/Vector-1.2.2.zip"
         url = "https://downloads.arduino.cc/libraries/github.com/janelia-arduino/Vector-1.2.2.zip"
-        if download_file(url, zip_path):
-            os.system(f"unzip -d libs {zip_path} && rm {zip_path}")
+        download_file(url, zip_path, unzip=True)
 
     if not libraryExists("IRemote"):
         os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
