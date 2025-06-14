@@ -8,7 +8,10 @@ import urllib.request
 
 class Installer:
     def __init__(self):
-        self.clipath = "bin/arduino-cli"
+        if self.is_windows():
+            self.clipath = "bin\\arduino-cli.exe"
+        else:
+            self.clipath = "bin/arduino-cli"
 
     def is_windows(self):
         return platform == 'win32' or platform == 'cygwin'
