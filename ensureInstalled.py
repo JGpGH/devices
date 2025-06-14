@@ -6,76 +6,90 @@ import tempfile
 import zipfile
 import urllib.request
 
+class Installer:
+    def __init__(self):
+        self.clipath = "bin/arduino-cli"
 
-def libraryExists(library):
-    return os.path.isdir(f"libs/{library}")
+    def is_windows(self):
+        return platform == 'win32' or platform == 'cygwin'
 
-def has_binary(binary):
-    return os.system(f"which {binary} > /dev/null 2>&1") == 0
-
-clipath = "bin/arduino-cli"
-
-def install_required_tools():
-    if not has_binary("apt"):
-        print(Error("can only run on apt based systems"))
-        raise SystemExit(1)
-    packages = []
-    if not has_binary("unzip"):
-        packages.append("unzip > /dev/null 2>&1")
-    if not has_binary("git"):
-        packages.append("git")
-    if not has_binary("curl"):
-        packages.append("curl")
-    if len(packages) > 0:
-        print(Info(f"Installing required packages: {', '.join(packages)}"))
-        os.system(f"sudo apt install {' '.join(packages)}")
-
-def coreInstalled(core):
-    result = subprocess.run([clipath, "core", "list"], capture_output=True, text=True)
-    return core in result.stdout
-
-def download_file(url, dest, unzip=False):
-    try:
-        with urllib.request.urlopen(url) as response:
-            if unzip:
-                with tempfile.TemporaryFile() as temp, zipfile.ZipFile(temp, 'r') as zip_ref:
-                    zip_ref.extractall(dest)
-            else:
-                with open(dest, 'wb') as out_file:
-                    out_file.write(response.read())
+    def is_ubuntu(self):
+        if not platform.startswith('linux'):
+            return False
+        if not os.path.exists('/etc/lsb-release'):
+            return False
+        with open('/etc/lsb-release') as f:
+            content = f.read()
+            if 'DISTRIB_ID=Ubuntu' not in content:
+                return False
         return True
-    except Exception as e:
-        print(Error(f"Failed to download {url}: {e}"))
-        return False
+    
+    def has_package(self, package):
+        if self.is_windows():
+            return os.system(f"where {package} >nul 2>&1") == 0
+        elif self.is_ubuntu():
+            return os.system(f"dpkg -l | grep -q {package}") == 0
+        else:
+            raise NotImplementedError("Unsupported platform")
+        
+    def library_exists(self, library):
+        return os.path.isdir(f"libs/{library}")
 
-def arduinoCliIsInstalled():
-    if not os.path.isfile(clipath):
-        print(Warning("Installing arduino-cli"))
-        if platform == 'win32':
-            download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", clipath, unzip=True)
-        subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
+    def install_required_tools(self):
+        packages = []
+        if not self.has_package("git"):
+            packages.append("git")
+        if not self.has_package("curl"):
+            packages.append("curl")
+        if len(packages) > 0:
+            print(Info(f"Installing required packages: {', '.join(packages)}"))
+            os.system(f"sudo apt install {' '.join(packages)}")
 
-def ensureAll():
-    install_required_tools()
-    arduinoCliIsInstalled()
+    def ensure_core_installed(self, core):
+        result = subprocess.run([self.clipath, "core", "list"], capture_output=True, text=True)
+        if not core in result.stdout:
+            print(Warning(f"Core {core} is not installed. Installing..."))
+            os.system(f"{self.clipath} core install {core}")
+            return True
 
-    if not coreInstalled("arduino:avr"):
-        print(Warning("Installing arduino:avr"))
-        os.system(f"{clipath} core install arduino:avr")
+    def download_file(self, url, dest, unzip=False):
+        try:
+            with urllib.request.urlopen(url) as response:
+                if unzip:
+                    with tempfile.TemporaryFile() as temp, zipfile.ZipFile(temp, 'r') as zip_ref:
+                        zip_ref.extractall(dest)
+                else:
+                    with open(dest, 'wb') as out_file:
+                        out_file.write(response.read())
+            return True
+        except Exception as e:
+            print(Error(f"Failed to download {url}: {e}"))
+            return False
 
-    if not coreInstalled("atmel-avr-xminis:avr"):
-        print(Warning("Installing atmel-avr-xminis:avr"))
-        os.system(f"{clipath} core install atmel-avr-xminis:avr")
+    def arduinoCliIsInstalled(self):
+        if not os.path.isfile(self.clipath):
+            print(Warning("Installing arduino-cli"))
+            if platform == 'win32':
+                self.download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", self.clipath, unzip=True)
+            subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
 
-    if not libraryExists("Vector-1.2.2"):
-        print(Warning("Installing Vector-1.2.2"))
-        zip_path = "libs/Vector-1.2.2.zip"
-        url = "https://downloads.arduino.cc/libraries/github.com/janelia-arduino/Vector-1.2.2.zip"
-        download_file(url, zip_path, unzip=True)
+    def ensureAll(self):
+        self.install_required_tools()
+        self.arduinoCliIsInstalled()
 
-    if not libraryExists("IRemote"):
-        os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
+        self.ensure_core_installed("arduino:avr")
+
+        self.ensure_core_installed("atmel-avr-xminis:avr")
+
+        if not self.library_exists("Vector-1.2.2"):
+            print(Warning("Installing Vector-1.2.2"))
+            zip_path = "libs/Vector-1.2.2.zip"
+            url = "https://downloads.arduino.cc/libraries/github.com/janelia-arduino/Vector-1.2.2.zip"
+            self.download_file(url, zip_path, unzip=True)
+
+        if not self.library_exists("IRemote"):
+            os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
 
 
 if __name__ == "__main__":
-    ensureAll()
+    Installer().ensureAll()
