@@ -7,7 +7,6 @@ python3 -m venv .
 
 ## Windows
 idk if buildAndUpload commands to arduinocli is going to work
-installation script wip
 
 # Upload 
 ```
