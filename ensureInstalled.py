@@ -60,8 +60,11 @@ class Installer:
         try:
             with urllib.request.urlopen(url) as response:
                 if unzip:
-                    with tempfile.TemporaryFile() as temp, zipfile.ZipFile(temp, 'r') as zip_ref:
-                        zip_ref.extractall(dest)
+                    with tempfile.TemporaryFile() as temp:
+                        temp.write(response.read())
+                        temp.seek(0)
+                        with zipfile.ZipFile(temp, 'r') as zip_ref:
+                            zip_ref.extractall(dest)
                 else:
                     with open(dest, 'wb') as out_file:
                         out_file.write(response.read())
@@ -74,7 +77,7 @@ class Installer:
         if not os.path.isfile(self.clipath):
             print(Warning("Installing arduino-cli"))
             if platform == 'win32':
-                self.download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", self.clipath, unzip=True)
+                self.download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", os.path.dirname(os.path.abspath(self.clipath)), unzip=True)
             else:
                 subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
 
