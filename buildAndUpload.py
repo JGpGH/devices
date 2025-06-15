@@ -5,7 +5,7 @@ import sys
 import json
 import getopt
 from generateConfigHeader import ConfigGenerator
-from ensureInstalled import clipath
+from ensureInstalled import CLIPATH
 from generateConfigHeader import Procedure
 
 def verboseCommand(command):
@@ -19,14 +19,14 @@ def build(config):
     generateConfigHeader(config['vars'], config['program'])
     programPath = os.path.join(os.getcwd(), 'programs', program)
     libPath = os.path.join(os.getcwd(), 'libs')
-    command = f"{clipath} compile --fqbn {fbqn} --libraries {libPath} {programPath}"
+    command = f"{CLIPATH} compile --fqbn {fbqn} --libraries {libPath} {programPath}"
     return verboseCommand(command)
 
 def upload(config, port):
     program = config['program']
     fbqn = config['fbqn']
     programPath = os.path.join(os.getcwd(), 'programs', program)
-    command = f"{clipath} upload --fqbn {fbqn} -p {port} {programPath}"
+    command = f"{CLIPATH} upload --fqbn {fbqn} -p {port} {programPath}"
     return verboseCommand(command)
 
 def loadConfiguration(configId):

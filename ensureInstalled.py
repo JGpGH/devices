@@ -6,12 +6,17 @@ import tempfile
 import zipfile
 import urllib.request
 
+WINDOWS_ARDUINO_CLI_PATH = "bin\\arduino-cli.exe"
+LINUX_ARDUINO_CLI_PATH = "bin/arduino-cli"
 class Installer:
     def __init__(self):
         if self.is_windows():
-            self.clipath = "bin\\arduino-cli.exe"
+            os.makedirs("bin", exist_ok=True)
+            self.clipath = WINDOWS_ARDUINO_CLI_PATH
+        elif self.is_ubuntu():
+            self.clipath = LINUX_ARDUINO_CLI_PATH
         else:
-            self.clipath = "bin/arduino-cli"
+            raise NotImplementedError("Unsupported platform")
 
     def is_windows(self):
         return platform == 'win32' or platform == 'cygwin'
@@ -39,14 +44,10 @@ class Installer:
         return os.path.isdir(f"libs/{library}")
 
     def install_required_tools(self):
-        packages = []
         if not self.has_package("git"):
-            packages.append("git")
-        if not self.has_package("curl"):
-            packages.append("curl")
-        if len(packages) > 0:
-            print(Info(f"Installing required packages: {', '.join(packages)}"))
-            os.system(f"sudo apt install {' '.join(packages)}")
+            raise Exception("Git is not installed. Please install Git to continue.")
+        if self.is_ubuntu() and not self.has_package("curl"):
+            os.system(f"sudo apt install curl")
 
     def ensure_core_installed(self, core):
         result = subprocess.run([self.clipath, "core", "list"], capture_output=True, text=True)
@@ -74,7 +75,8 @@ class Installer:
             print(Warning("Installing arduino-cli"))
             if platform == 'win32':
                 self.download_file("https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip", self.clipath, unzip=True)
-            subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
+            else:
+                subprocess.run("curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh", shell=True)
 
     def ensureAll(self):
         self.install_required_tools()
@@ -92,7 +94,7 @@ class Installer:
 
         if not self.library_exists("IRemote"):
             os.system("git clone https://github.com/z3t0/Arduino-IRremote.git libs/IRemote")
-
+CLIPATH = Installer().clipath
 
 if __name__ == "__main__":
     Installer().ensureAll()

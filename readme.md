@@ -4,6 +4,11 @@ python3 -m venv .
 ./bin/pip3 install -r ./requirements.txt
 ./bin/python3 ./ensureInstalled.py
 ```
+
+## Windows
+idk if buildAndUpload commands to arduinocli is going to work
+installation script wip
+
 # Upload 
 ```
 ./bin/python3 ./buildAndUpload.py [config name] [serial port]

@@ -1,9 +1,7 @@
-import ensureInstalled
 from deviceWatch import SerialDeviceWatcher
 from flask import Flask
 
 if __name__ == "__main__":
-    ensureInstalled.ensureAll()
     watcher = SerialDeviceWatcher(
         on_create=lambda device: print(f"Device added: {device}"),
         on_delete=lambda device: print(f"Device removed: {device}")
