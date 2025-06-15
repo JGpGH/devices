@@ -16,3 +16,12 @@ example:
 ```
 ./bin/python3 ./buildAndUpload.py nano-codec-test /dev/ttyUSB0
 ```
+```
+python3 .\buildAndUpload.py -c blinky-uno -p COM10
+```
+
+# Find you port
+## Windows
+listserialportswindows.ps1
+## Ubuntu
+listserialportsubuntu.sh
