@@ -1,8 +1,12 @@
 # Install
+### Windows
+run on powershell, regular user
 ```
-python3 -m venv .
-./bin/pip3 install -r ./requirements.txt
-./bin/python3 ./ensureInstalled.py
+install-windows.ps1
+```
+### Ubuntu
+```
+install-ubuntu.sh
 ```
 # Upload 
 ```
