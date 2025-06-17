@@ -112,22 +112,17 @@ class ConfigGenerator:
             f.write("#ifndef CONFIG_H\n")
             f.write("#define CONFIG_H\n")
             if len(procedures) > 0:
-                f.write("#include \"procedure.hpp\"\n")
-
+                f.write("#include <serialrpc.hpp>\n")
             [f.write(self.variableToString(variable, configSchema[variable]['type'], configVariables[variable])) for variable in configVariables]
 
             for procedure in procedures:
-                f.write(f"{self.to_c_type(procedure.returnType)} {procedure.name}({', '.join([f'{self.to_c_type(argType)} {argName}' for argType, argName in procedure.args])});\n")
-                f.write(f"ProcedureResult rpc_{procedure.name}(Buffer buff) {{\n")
-                f.write(f"    {self.to_c_type(procedure.returnType)} result;\n")
-                f.write("    bool success = true;\n")
-                for argType, argName in procedure.args:
-                    f.write(f"    {self.to_c_type(argType)} {argName} = buff.decode_{argType}(&success);\n")
-                    f.write("    if (!success) {\n")
-                    f.write(f"        return {{Buffer(0), error::INVALID_INPUT}};\n")
-                    f.write("    }\n")
-                f.write(f"    result = {procedure.name}({', '.join([arg[1] for arg in procedure.args])});\n")
-                f.write("    return {Buffer::from(result), error::NONE};\n")
-                f.write("}\n")
+                f.write(f"int rpc_{procedure.name}(const uint8_t* data, uint16_t data_len, uint8_t* resp_buf, uint16_t resp_buf_size, uint16_t* resp_len);\n")
+
+            # Generate the procedure set array
+            f.write("\nstatic SerialRpcProcedure procedure_set_array[] = {\n")
+            for procedure in procedures:
+                f.write(f"    rpc_{procedure.name},\n")
+            f.write("};\n")
+            f.write(f"\nstatic ProcedureSet procedure_set = {{ procedure_set_array, {len(procedures)} }};\n")
+            f.write("\nstatic SerialRpc serial_rpc = { procedure_set };\n")
             f.write("#endif\n")
-    

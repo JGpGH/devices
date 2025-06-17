@@ -1,0 +1,7 @@
+{
+    "fbqn": "arduino:avr:uno",
+    "program": "serialrpc-test",
+    "vars": {
+        "BAUDRATE": 115200
+    }
+}

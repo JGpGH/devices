@@ -9,6 +9,9 @@ install-windows.ps1
 install-ubuntu.sh
 ```
 # Upload 
+## find your serial port
+./bin/arduino-cli board list
+## build & upload
 ```
 ./bin/python3 ./buildAndUpload.py [config name] [serial port]
 ```
@@ -19,9 +22,3 @@ example:
 ```
 python3 .\buildAndUpload.py -c blinky-uno -p COM10
 ```
-
-# Find you port
-## Windows
-listserialportswindows.ps1
-## Ubuntu
-listserialportsubuntu.sh

@@ -3,32 +3,6 @@
 ## Values
 - All numeric values are little-endian.
 
-## Payload
-
-- A payload is either a remote procedure call or a remote procedure response
-- Every call must have a response
-- Every payload has the meta byte as first byte
-### Meta byte
-- metaByte & 1: call (1) or response (0)
-- metaByte & 2: has error (1) or no error (0)
-- metaByte & 4: has data (1) or no data (0). if 0, there will be nothing else in the payload
-- metaByte & 8: parity of the data, can be ignored if there's no data 
-- metaByte & 0xF0 << 4: error code (0-15), can be ignored if there's no error
-### Error codes
-- NotFound (0): No procedure registered at the specified index
-- BadData (1): Unexpected shape or format of data
-- ProcedureError (2): Something went wrong while running the procedure
-- BadGateway (3): Some relay did not find a reachable destination
-- LKJFEHWD (4): the payload was corrupted 
-### Call
-- starts with the meta byte
-- then the index of the procedure as a `u8`
-- followed by the argument described in contract
-### Response
-- starts with the meta byte
-- then the index of the procedure as a `u8`
-- followed by the returned data of the procedure
-
 ## Types
 
 ### Boolean (`bool`)
@@ -58,3 +32,49 @@
 - All types have an array variant.
 - Each array is preceded by a `u32` specifying the number of elements.
 - Elements are encoded in sequence, each using the rules for its type.
+
+## Payload
+- A payload is either a remote procedure call or a remote procedure response
+- Every call must have a response
+- Every payload has the meta byte as first byte
+- If there's data on the payload, a `u16` will follow the meta byte representing the data length
+- the data is the last thing on the payload
+### Meta byte
+- metaByte & 1: call (1) or response (0)
+- metaByte & 2: has error (1) or no error (0)
+- metaByte & 4: has data (1) or no data (0). if 0, there will be nothing else in the payload
+- metaByte & 8: parity of the data, can be ignored if there's no data 
+- metaByte & 0xF0 << 4: error code (0-15), can be ignored if there's no error
+### Error codes
+- NotFound (0): No procedure registered at the specified index
+- BadData (1): Unexpected shape or format of data
+- ProcedureError (2): Something went wrong while running the procedure
+- BadGateway (3): Some relay did not find a reachable destination
+- LKJFEHWD (4): the payload was corrupted 
+### Call
+- starts with the meta byte
+- then the index of the procedure as a `u8`
+- followed by the argument described in contract
+### Response
+- starts with the meta byte
+- then the index of the procedure as a `u8`
+- followed by the returned data of the procedure
+
+## Procedure description
+### Procedure Signature Format
+
+A procedure is described using the following format:
+
+```
+<return_type> <procedure_name>(<arg1_type> <arg1_name>, <arg2_type> <arg2_name>, ...)
+```
+
+- `<return_type>`: The type returned by the procedure.
+- `<procedure_name>`: The name of the procedure.
+- Arguments are listed in parentheses, each as `<type> <name>`, separated by commas.
+
+**Example:**
+```
+u32 add(u32 a, u32 b)
+```
+This describes a procedure named `add` that takes two `u32` arguments (`a` and `b`) and returns a `u32`.

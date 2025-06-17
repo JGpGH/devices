@@ -1,0 +1,13 @@
+{
+    "config": {
+        "BAUDRATE": {
+            "description": "speed of the serial port",
+            "type": "i32",
+            "default": 115200,
+            "required": true
+        }
+    },
+    "procedures": [
+        "u32 add(u32 a, u32 b)"
+    ]
+}
