@@ -1,5 +1,9 @@
 #ifndef SERIALRPC_HPP
 #define SERIALRPC_HPP
+
+#ifdef UNIT_TEST
+#include "serial_mock.hpp"
+#endif
 #include "codec.hpp"
 #include <string.h>
 
@@ -102,7 +106,7 @@ void serial_rpc_tick(SerialRpc* serial_rpc) {
     header[3] = (resp_len >> 8) & 0xFF;
     Serial.write(header, 4);
     if (resp_len > 0) {
-        Serial.write(resp_buf + 1, resp_len); // Convention: response data starts at resp_buf[1]
+        Serial.write(resp_buf, resp_len); // Write response data from start of buffer
     }
 }
 

@@ -7,8 +7,15 @@ LDFLAGS =
 test_srcs := $(wildcard *_test.cpp)
 test_bins := $(test_srcs:.cpp=)
 
+# Tests that require UNIT_TEST (mocked Serial)
+unit_test_bins := serialrpc_test
+
 all: $(test_bins)
 
+serialrpc_test: serialrpc_test.cpp
+	$(CXX) $(CXXFLAGS) -DUNIT_TEST $< -o $@ $(LDFLAGS)
+
+# Default rule for other tests
 %: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
 
