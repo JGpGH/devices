@@ -10,6 +10,8 @@ WINDOWS_ARDUINO_CLI_PATH = "bin\\arduino-cli.exe"
 LINUX_ARDUINO_CLI_PATH = "bin/arduino-cli"
 class Installer:
     def __init__(self):
+        self.is_ubuntu_value = None
+        self.is_windows_value = None
         if self.is_windows():
             os.makedirs("bin", exist_ok=True)
             self.clipath = WINDOWS_ARDUINO_CLI_PATH
@@ -19,18 +21,27 @@ class Installer:
             raise NotImplementedError("Unsupported platform")
 
     def is_windows(self):
-        return platform == 'win32' or platform == 'cygwin'
+        if self.is_windows_value is not None:
+            return self.is_windows_value
+        self.is_windows_value = platform == 'win32' or platform == 'cygwin'
+        return self.is_windows_value
 
     def is_ubuntu(self):
+        if self.is_ubuntu_value is not None:
+            return self.is_ubuntu_value
         if not platform.startswith('linux'):
-            return False
+            self.is_ubuntu_value = False
+            return self.is_ubuntu_value
         if not os.path.exists('/etc/lsb-release'):
-            return False
+            self.is_ubuntu_value = False
+            return self.is_ubuntu_value
         with open('/etc/lsb-release') as f:
             content = f.read()
             if 'DISTRIB_ID=Ubuntu' not in content:
-                return False
-        return True
+                self.is_ubuntu_value = False
+                return self.is_ubuntu_value
+        self.is_ubuntu_value = True
+        return self.is_ubuntu_value
     
     def has_package(self, package):
         if self.is_windows():
@@ -46,8 +57,11 @@ class Installer:
     def install_required_tools(self):
         if not self.has_package("git"):
             raise Exception("Git is not installed. Please install Git to continue.")
-        if self.is_ubuntu() and not self.has_package("curl"):
-            os.system(f"sudo apt install curl")
+        if self.is_ubuntu(): 
+            if not self.has_package("curl"):
+                os.system(f"sudo apt install curl")
+            if not self.has_package("gcc"):
+                os.system(f"sudo apt install build-essential")
 
     def ensure_core_installed(self, core):
         result = subprocess.run([self.clipath, "core", "list"], capture_output=True, text=True)
