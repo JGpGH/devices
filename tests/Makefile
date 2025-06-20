@@ -2,22 +2,26 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 -MMD -MP
 LDFLAGS = 
+BIN_DIR = bin
 
 # Find all test source files ending with _test.cpp
 test_srcs := $(wildcard *_test.cpp)
-test_bins := $(test_srcs:.cpp=)
+test_bins := $(addprefix $(BIN_DIR)/, $(test_srcs:.cpp=))
 deps := $(test_srcs:.cpp=.d)
 
 # Tests that require UNIT_TEST (mocked Serial)
-unit_test_bins := serialrpc_test
+unit_test_bins := $(BIN_DIR)/serialrpc_test
 
-all: $(test_bins)
+all: $(BIN_DIR) $(test_bins)
 
-serialrpc_test: serialrpc_test.cpp
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
+$(BIN_DIR)/serialrpc_test: serialrpc_test.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -DUNIT_TEST $< -o $@ $(LDFLAGS)
 
 # Default rule for other tests
-%: %.cpp
+$(BIN_DIR)/%: %.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
 
 -include $(deps)
@@ -32,13 +36,13 @@ clean:
 	rm -f $(test_bins) *.d
 
 # Device integration test (not run by default)
-device_integrationtest: device_integrationtest.cpp
-	$(CXX) $(CXXFLAGS) device_integrationtest.cpp -o device_integrationtest $(LDFLAGS)
+$(BIN_DIR)/device_integrationtest: device_integrationtest.cpp | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) device_integrationtest.cpp -o $@ $(LDFLAGS)
 
 .PHONY: integrationtest
-integrationtest: device_integrationtest
+integrationtest: $(BIN_DIR)/device_integrationtest
 	@if [ -z "$$DEV" ]; then \
 		echo "Usage: make integrationtest DEV=/dev/ttyACM0"; \
 		exit 1; \
 	fi; \
-	./device_integrationtest $$DEV
+	./$(BIN_DIR)/device_integrationtest $$DEV
