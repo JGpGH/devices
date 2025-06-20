@@ -1,3 +1,2 @@
-codec_test
-metabyte_test
-serialrpc_test
+*_test
+*.d
