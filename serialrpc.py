@@ -72,9 +72,12 @@ class SerialRpc:
         self.ser = serial.Serial(port, baudrate, timeout=timeout)
 
     def call(self, proc_idx, args_bytes):
-        # Build payload
-        meta = metabyte_from_block(True, False, True, False, 0)
-        payload = bytes([meta]) + encode_u8(proc_idx) + encode_u16(len(args_bytes)) + args_bytes
+        # Build payload according to specs.md: meta, proc_idx, [args_bytes]
+        has_data = len(args_bytes) > 0
+        meta = metabyte_from_block(True, False, has_data, False, 0)
+        payload = bytes([meta]) + encode_u8(proc_idx)
+        if has_data:
+            payload += args_bytes
         self.ser.write(payload)
         # Read response meta and proc_idx
         meta = self.ser.read(1)
@@ -87,13 +90,8 @@ class SerialRpc:
             raise TimeoutError('No response proc_idx')
         idx = idx[0]
         if mb['has_data']:
-            len_bytes = self.ser.read(2)
-            if len(len_bytes) < 2:
-                raise TimeoutError('No response data length')
-            data_len = struct.unpack('<H', len_bytes)[0]
-            data = self.ser.read(data_len)
-            if len(data) < data_len:
-                raise TimeoutError('Incomplete response data')
+            # Read up to 8 bytes (max for u64); decode function will use only what it needs
+            data = self.ser.read(8)
         else:
             data = b''
         return mb, idx, data

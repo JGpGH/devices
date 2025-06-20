@@ -22,3 +22,6 @@ example:
 ```
 python3 .\buildAndUpload.py -c blinky-uno -p COM10
 ```
+
+## test
+make -C tests run

@@ -1,0 +1,7 @@
+{
+    "fbqn": "arduino:avr:uno",
+    "program": "echo",
+    "vars": {
+        "BAUDRATE": 115200
+    }
+}

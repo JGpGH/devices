@@ -1,10 +1,14 @@
 {
-    "IR_SEND_PIN": {
-        "description": "IR pins where the signal will be broadcasted",
-        "type": "int"
-    },
-    "IR_RECEIVE_PIN": {
-        "description": "IR pin where the signal will be received",
-        "type": "int"
+    "config": {
+        "IR_SEND_PIN": {
+            "description": "IR pins where the signal will be broadcasted",
+            "type": "int",
+            "required": true
+        },
+        "IR_RECEIVE_PIN": {
+            "description": "IR pin where the signal will be received",
+            "type": "int",
+            "required": true
+        }
     }
 }

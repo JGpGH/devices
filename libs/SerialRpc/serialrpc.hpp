@@ -34,7 +34,7 @@ struct SerialRpc {
 
 // Helper: respond with error
 static void serialrpc_respond_error(uint8_t proc_idx, uint8_t error_code) {
-    uint8_t resp[3];
+    uint8_t resp[2];
     MetaBlock mb = {0};
     mb.is_call = false;
     mb.has_error = true;
@@ -43,7 +43,6 @@ static void serialrpc_respond_error(uint8_t proc_idx, uint8_t error_code) {
     mb.error_code = error_code;
     resp[0] = metabyte_from_block(&mb);
     resp[1] = proc_idx;
-    resp[2] = 0; // No data
     Serial.write(resp, 2); // Only meta and proc idx
 }
 
