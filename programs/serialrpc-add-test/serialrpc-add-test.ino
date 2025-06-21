@@ -1,17 +1,6 @@
 #include "config.h"
 #include <codec.hpp>
-
-void setup() {
-    Serial.begin(BAUDRATE);
-    pinMode(LED_BUILTIN, OUTPUT);
-    #if defined(USBCON)
-    while (!Serial) {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-    }
-    #endif
-}
+#include <serialrpc.hpp>
 
 int rpc_add(const uint8_t* data, uint16_t data_len, uint8_t* resp_buf, uint16_t resp_buf_size, uint16_t* resp_len) {
     if (data_len != 8) {
@@ -28,7 +17,22 @@ int rpc_add(const uint8_t* data, uint16_t data_len, uint8_t* resp_buf, uint16_t 
     return 0; // Success
 }
 
+SerialRpcProcedure procedures[] = { rpc_add };
+SerialRpc serial_rpc(procedures, 1);
+
+void setup() {
+    Serial.begin(BAUDRATE);
+    pinMode(LED_BUILTIN, OUTPUT);
+    #if defined(USBCON)
+    while (!Serial) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+    #endif
+}
+
 void loop() {
-    serial_rpc_tick(&serial_rpc);
+    serial_rpc.tick();
     delay(10); // Prevent flooding the serial port
 }

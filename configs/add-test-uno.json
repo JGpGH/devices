@@ -1,6 +1,6 @@
 {
     "fbqn": "arduino:avr:uno",
-    "program": "serialrpc-test",
+    "program": "serialrpc-add-test",
     "vars": {
         "BAUDRATE": 115200
     }

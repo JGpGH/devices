@@ -42,7 +42,7 @@ $(BIN_DIR)/device_integrationtest: device_integrationtest.cpp | $(BIN_DIR)
 .PHONY: integrationtest
 integrationtest: $(BIN_DIR)/device_integrationtest
 	@if [ -z "$$DEV" ]; then \
-		echo "Usage: make integrationtest DEV=/dev/ttyACM0"; \
+		echo "Usage: make integrationtest DEV=/dev/ttyACM0 [TEST=test_name]"; \
 		exit 1; \
 	fi; \
-	./$(BIN_DIR)/device_integrationtest $$DEV
+	./$(BIN_DIR)/device_integrationtest $$DEV $$TEST

@@ -119,12 +119,4 @@ class ConfigGenerator:
                 for procedure in procedures:
                     f.write(f"int rpc_{procedure.name}(const uint8_t* data, uint16_t data_len, uint8_t* resp_buf, uint16_t resp_buf_size, uint16_t* resp_len);\n")
 
-                # Generate the procedure set array
-                f.write("\nstatic SerialRpcProcedure procedure_set_array[] = {\n")
-                for procedure in procedures:
-                    f.write(f"    rpc_{procedure.name},\n")
-                f.write("};\n")
-                f.write(f"\nstatic ProcedureSet procedure_set = {{ procedure_set_array, {len(procedures)} }};\n")
-                f.write("\nstatic SerialRpc serial_rpc = { procedure_set };\n")
-
             f.write("#endif\n")
