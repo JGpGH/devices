@@ -22,8 +22,8 @@ typedef struct {
 // Helper: read little-endian unsigned integers from buffer
 typedef struct {
     const uint8_t* buf;
-    size_t size;
-    size_t pos;
+    uint16_t size;
+    uint16_t pos;
 } BufferView;
 
 static inline bool bv_read_u8(BufferView* bv, uint8_t* out) {
@@ -121,20 +121,20 @@ static inline bool bv_read_enum(BufferView* bv, uint8_t* out) {
 }
 
 // --- Write functions ---
-static inline bool bv_write_u8(uint8_t* buf, size_t buf_size, size_t* pos, uint8_t val) {
+static inline bool bv_write_u8(uint8_t* buf, uint16_t buf_size, uint16_t* pos, uint8_t val) {
     if (*pos + 1 > buf_size) return false;
     buf[(*pos)++] = val;
     return true;
 }
 
-static inline bool bv_write_u16(uint8_t* buf, size_t buf_size, size_t* pos, uint16_t val) {
+static inline bool bv_write_u16(uint8_t* buf, uint16_t buf_size, uint16_t* pos, uint16_t val) {
     if (*pos + 2 > buf_size) return false;
     buf[(*pos)++] = val & 0xFF;
     buf[(*pos)++] = (val >> 8) & 0xFF;
     return true;
 }
 
-static inline bool bv_write_u32(uint8_t* buf, size_t buf_size, size_t* pos, uint32_t val) {
+static inline bool bv_write_u32(uint8_t* buf, uint16_t buf_size, uint16_t* pos, uint32_t val) {
     if (*pos + 4 > buf_size) return false;
     buf[(*pos)++] = val & 0xFF;
     buf[(*pos)++] = (val >> 8) & 0xFF;
@@ -143,7 +143,7 @@ static inline bool bv_write_u32(uint8_t* buf, size_t buf_size, size_t* pos, uint
     return true;
 }
 
-static inline bool bv_write_u64(uint8_t* buf, size_t buf_size, size_t* pos, uint64_t val) {
+static inline bool bv_write_u64(uint8_t* buf, uint16_t buf_size, uint16_t* pos, uint64_t val) {
     if (*pos + 8 > buf_size) return false;
     for (int i = 0; i < 8; ++i) {
         buf[(*pos)++] = (val >> (8 * i)) & 0xFF;
@@ -151,46 +151,46 @@ static inline bool bv_write_u64(uint8_t* buf, size_t buf_size, size_t* pos, uint
     return true;
 }
 
-static inline bool bv_write_i8(uint8_t* buf, size_t buf_size, size_t* pos, int8_t val) {
+static inline bool bv_write_i8(uint8_t* buf, uint16_t buf_size, uint16_t* pos, int8_t val) {
     return bv_write_u8(buf, buf_size, pos, (uint8_t)val);
 }
 
-static inline bool bv_write_i16(uint8_t* buf, size_t buf_size, size_t* pos, int16_t val) {
+static inline bool bv_write_i16(uint8_t* buf, uint16_t buf_size, uint16_t* pos, int16_t val) {
     return bv_write_u16(buf, buf_size, pos, (uint16_t)val);
 }
 
-static inline bool bv_write_i32(uint8_t* buf, size_t buf_size, size_t* pos, int32_t val) {
+static inline bool bv_write_i32(uint8_t* buf, uint16_t buf_size, uint16_t* pos, int32_t val) {
     return bv_write_u32(buf, buf_size, pos, (uint32_t)val);
 }
 
-static inline bool bv_write_i64(uint8_t* buf, size_t buf_size, size_t* pos, int64_t val) {
+static inline bool bv_write_i64(uint8_t* buf, uint16_t buf_size, uint16_t* pos, int64_t val) {
     return bv_write_u64(buf, buf_size, pos, (uint64_t)val);
 }
 
-static inline bool bv_write_f32(uint8_t* buf, size_t buf_size, size_t* pos, float val) {
+static inline bool bv_write_f32(uint8_t* buf, uint16_t buf_size, uint16_t* pos, float val) {
     uint32_t tmp;
     memcpy(&tmp, &val, sizeof(float));
     return bv_write_u32(buf, buf_size, pos, tmp);
 }
 
-static inline bool bv_write_f64(uint8_t* buf, size_t buf_size, size_t* pos, double val) {
+static inline bool bv_write_f64(uint8_t* buf, uint16_t buf_size, uint16_t* pos, double val) {
     uint64_t tmp;
     memcpy(&tmp, &val, sizeof(double));
     return bv_write_u64(buf, buf_size, pos, tmp);
 }
 
-static inline bool bv_write_bool(uint8_t* buf, size_t buf_size, size_t* pos, bool val) {
+static inline bool bv_write_bool(uint8_t* buf, uint16_t buf_size, uint16_t* pos, bool val) {
     return bv_write_u8(buf, buf_size, pos, val ? 1 : 0);
 }
 
-static inline bool bv_write_bytes(uint8_t* buf, size_t buf_size, size_t* pos, const uint8_t* data, size_t data_len) {
+static inline bool bv_write_bytes(uint8_t* buf, uint16_t buf_size, uint16_t* pos, const uint8_t* data, uint16_t data_len) {
     if (*pos + data_len > buf_size) return false;
     memcpy(&buf[*pos], data, data_len);
     *pos += data_len;
     return true;
 }
 
-static inline bool bv_write_string(uint8_t* buf, size_t buf_size, size_t* pos, const char* str, uint32_t len) {
+static inline bool bv_write_string(uint8_t* buf, uint16_t buf_size, uint16_t* pos, const char* str, uint32_t len) {
     if (!bv_write_u32(buf, buf_size, pos, len)) return false;
     return bv_write_bytes(buf, buf_size, pos, (const uint8_t*)str, len);
 }

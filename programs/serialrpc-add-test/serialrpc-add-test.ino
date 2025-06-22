@@ -11,7 +11,7 @@ int rpc_add(const uint8_t* data, uint16_t data_len, uint8_t* resp_buf, uint16_t 
     if (!bv_read_u32(&bv, &a)) return SERIALRPC_ERR_BADDATA;
     if (!bv_read_u32(&bv, &b)) return SERIALRPC_ERR_BADDATA;
     uint32_t sum = a + b;
-    size_t pos = 0;
+    int pos = 0;
     if (!bv_write_u32(resp_buf, resp_buf_size, &pos, sum)) return SERIALRPC_ERR_PROCERR;
     *resp_len = pos;
     return 0; // Success

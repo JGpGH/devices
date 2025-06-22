@@ -104,9 +104,13 @@ private:
         uint8_t header[4];
         header[0] = metabyte_from_block(&resp_mb);
         header[1] = proc_idx;
-        header[2] = resp_len & 0xFF;
-        header[3] = (resp_len >> 8) & 0xFF;
-        Serial.write(header, 4);
+        if (resp_len > 0) {
+            header[2] = resp_len & 0xFF;
+            header[3] = (resp_len >> 8) & 0xFF;
+            Serial.write(header, 4);
+        } else {
+            Serial.write(header, 2);
+        }
         if (resp_len > 0) {
             Serial.write(resp_buf, resp_len);
         }

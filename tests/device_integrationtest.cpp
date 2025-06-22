@@ -37,32 +37,47 @@ int test_echo(ConsoleState* state, SerialRpcClient& client) {
     return 0;
 }
 
+void print_meta(ConsoleState* state, uint8_t meta) {
+    MetaBlock mb;
+    metabyte_to_block(meta, &mb);
+    print_above(state, COLOR_CYAN, "Meta: is_call=%d, has_error=%d, has_data=%d, parity=%d, error_code=0x%02X",
+        mb.is_call, mb.has_error, mb.has_data, mb.parity, mb.error_code);
+}
+
 int test_add(ConsoleState* state, SerialRpcClient& client) {
     // Prepare two uint32_t values
-    uint32_t a = 0x12345678, b = 0x11111111;
-    std::vector<uint8_t> test_data(8);
-    test_data[0] = a & 0xFF; test_data[1] = (a >> 8) & 0xFF; test_data[2] = (a >> 16) & 0xFF; test_data[3] = (a >> 24) & 0xFF;
-    test_data[4] = b & 0xFF; test_data[5] = (b >> 8) & 0xFF; test_data[6] = (b >> 16) & 0xFF; test_data[7] = (b >> 24) & 0xFF;
+    uint32_t a = 0x12221122, b = 0x11334455;
+    std::vector<uint8_t> test_data(0);
+    SerialRpcClient::write(test_data, a);
+    SerialRpcClient::write(test_data, b);
+    print_above(state, COLOR_BLUE, "data payload: %02X %02X %02X %02X %02X %02X %02X %02X",
+        test_data[0], test_data[1], test_data[2], test_data[3],
+        test_data[4], test_data[5], test_data[6], test_data[7]);
     uint8_t meta = 0, proc_idx = 0;
     print_above(state, COLOR_BLUE, " Testing add procedure with: %08X + %08X", a, b);
-    auto start = std::chrono::steady_clock::now();
     auto resp = client.call(0, test_data, meta, proc_idx);
     if (resp.size() != 4) {
         print_above(state, COLOR_RED, " Add test failed: no or incomplete response");
+        print_meta(state, meta);
         return 1;
     }
-    uint32_t sum = resp[0] | (resp[1] << 8) | (resp[2] << 16) | (resp[3] << 24);
-    if (sum != a + b) {
-        print_above(state, COLOR_RED, " Add test failed: expected %08X, got %08X", a + b, sum);
-        return 2;
-    }
+    uint32_t sum = 0;
+    int readPtr = 0;
+    SerialRpcClient::read(resp, readPtr, &sum);
     if (meta != 0x04) {
         print_above(state, COLOR_RED, " Add test returned unexpected meta: expected 0x04, got %02X", meta);
+        print_meta(state, meta);
         return 3;
     }
     if (proc_idx != 0) {
         print_above(state, COLOR_RED, " Add test returned unexpected proc_idx: expected 0x00, got %02X", proc_idx);
+        print_meta(state, meta);
         return 4;
+    }
+    if (sum != a + b) {
+        print_above(state, COLOR_RED, " Add test failed: expected %08X, got %08X", a + b, sum);
+        print_meta(state, meta);
+        return 2;
     }
     print_above(state, COLOR_GREEN, " Add test passed");
     return 0;
