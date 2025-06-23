@@ -34,14 +34,17 @@ static inline bool bv_read_u8(BufferView* bv, uint8_t* out) {
 
 static inline bool bv_read_u16(BufferView* bv, uint16_t* out) {
     if (bv->pos + 2 > bv->size) return false;
-    *out = bv->buf[bv->pos] | (bv->buf[bv->pos+1] << 8);
+    *out = (uint16_t)bv->buf[bv->pos] | ((uint16_t)bv->buf[bv->pos+1] << 8);
     bv->pos += 2;
     return true;
 }
 
 static inline bool bv_read_u32(BufferView* bv, uint32_t* out) {
     if (bv->pos + 4 > bv->size) return false;
-    *out = bv->buf[bv->pos] | (bv->buf[bv->pos+1] << 8) | (bv->buf[bv->pos+2] << 16) | (bv->buf[bv->pos+3] << 24);
+    *out = (uint32_t)bv->buf[bv->pos] |
+           ((uint32_t)bv->buf[bv->pos+1] << 8) |
+           ((uint32_t)bv->buf[bv->pos+2] << 16) |
+           ((uint32_t)bv->buf[bv->pos+3] << 24);
     bv->pos += 4;
     return true;
 }

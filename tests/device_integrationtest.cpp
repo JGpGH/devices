@@ -46,13 +46,10 @@ void print_meta(ConsoleState* state, uint8_t meta) {
 
 int test_add(ConsoleState* state, SerialRpcClient& client) {
     // Prepare two uint32_t values
-    uint32_t a = 0x12221122, b = 0x11334455;
+    uint32_t a = 0x12345678, b = 0x11111111;
     std::vector<uint8_t> test_data(0);
     SerialRpcClient::write(test_data, a);
     SerialRpcClient::write(test_data, b);
-    print_above(state, COLOR_BLUE, "data payload: %02X %02X %02X %02X %02X %02X %02X %02X",
-        test_data[0], test_data[1], test_data[2], test_data[3],
-        test_data[4], test_data[5], test_data[6], test_data[7]);
     uint8_t meta = 0, proc_idx = 0;
     print_above(state, COLOR_BLUE, " Testing add procedure with: %08X + %08X", a, b);
     auto resp = client.call(0, test_data, meta, proc_idx);
